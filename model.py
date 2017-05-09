@@ -38,9 +38,10 @@ class Model:
 
     def trainNet(self):
         # init data for model
-        n_train_batches = len(self.test_data[0]) // self.batch_size
+        n_train_batches = len(self.training_data[0]) // self.batch_size
         n_val_batches = len(self.dev_data[0]) // self.batch_size
-        n_test_batches = len(self.training_data[0]) // self.batch_size
+        n_test_batches = len(self.test_data[0]) // self.batch_size
+        print(n_train_batches, n_val_batches, n_test_batches)
         test_set_x, test_set_y = self.shared_dataset(self.test_data)
         val_set_x, val_set_y = self.shared_dataset(self.dev_data)
         train_set_x, train_set_y = self.shared_dataset(self.training_data)
@@ -132,7 +133,7 @@ class Model:
             start = time.time()
             for mini_batch in xrange(n_train_batches):
                 cost_batch = train_model(mini_batch)
-                print('epoch: %i, training time: %.2f secs; with cost: %.2f' % (epoch, time.time() - start), cost_batch)
+                #print('epoch: %i, training time: %.2f secs; with cost: %.2f' % (epoch, time.time() - start, cost_batch))
                 # perform early stopping to avoid overfitting (check with frequency or check every iteration)
                 # iter = (epoch - 1) * n_train_batches + minibatch_index
                 # if (iter + 1) % validation_frequency == 0
