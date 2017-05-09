@@ -15,6 +15,7 @@ class ConvolutionLayer(object):
         self.input = input
         self.filter_shape = filter_shape
         self.input_shape = input_shape
+        print(self.input_shape)
         self.poolsize = poolsize
         self.non_linear = non_linear
         # there are "num input feature maps * filter height * filter width"
