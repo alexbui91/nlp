@@ -128,12 +128,17 @@ class Model:
         best_batch_gain = 0
         stop_count = 0
         epoch = 0
+        total_cost_train = 0.
+        average_test_score = 0.
+        total_test_score = 0.
         while(epoch < self.epochs):
+            total_cost_train = 0.
+            average_test_score = 0.
+            total_test_score = 0.
             epoch += 1
             start = time.time()
             for mini_batch in xrange(n_train_batches):
-                cost_batch = train_model(mini_batch)
-                #print('epoch: %i, training time: %.2f secs; with cost: %.2f' % (epoch, time.time() - start, cost_batch))
+                total_cost_train += train_model(mini_batch)
                 # perform early stopping to avoid overfitting (check with frequency or check every iteration)
                 # iter = (epoch - 1) * n_train_batches + minibatch_index
                 # if (iter + 1) % validation_frequency == 0
@@ -152,12 +157,14 @@ class Model:
                         test_model(i)
                         for i in range(n_test_batches)
                     ]
-                    test_score = np.mean(test_losses)
-                    print(('epoch %i, minibatch %i/%i, test error of best model %f %%') % (epoch, mini_batch + 1, n_train_batches, test_score * 100.))
+                    total_test_score += np.mean(test_losses)
                 else:
                     stop_count += 1
                 if stop_count == self.patience:
                     break
+            average_test_score = total_test_score / n_test_batches 
+            print(('epoch %i, test error of best model %f %%') % (epoch, n_train_batches, average_test_score * 100.))
+            print('epoch: %i, training time: %.2f secs; with cost: %.2f' % (epoch, time.time() - start, total_cost_train))
 
     def initNetwork(self):
         rng = np.random.RandomState(3435)
