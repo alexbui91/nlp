@@ -61,18 +61,20 @@ class Model:
         #init networks
         rng = np.random.RandomState(3435)
         # create convolution network for each window size 3, 4, 5
-        conv_layer = conv_layer = ConvolutionLayer(rng, (self.hidden_units[0], 1, 3, self.img_width),
-                                          (self.batch_size, 1, self.img_height, self.img_width), [self.img_height - 3 + 1, 1])
-
-        layer0_input = conv_layer.predict(layer0_input)
-        # size of layer0_input: B x 1 x 100 x 1
-        layer1_input = layer0_input.flatten(2)
-        # size of layer1_input: B x 1 x 1 x100
-        layer1_inputs.append(layer1_input)
+        cnet = list()
+        for fh in self.filter_size:
+            conv_layer = ConvolutionLayer(rng, (self.hidden_units[0], 1, fh, self.img_width),
+                                                    (self.batch_size, 1, self.img_height, self.img_width), 
+                                                    [self.img_height - 3 + 1, 1])
+            cnet.append(conv_layer)
+            conv_output = conv_layer.predict(layer0_input)
+            # size of layer0_input: B x 1 x 100 x 1
+            layer1_input = conv_output.flatten(2)
+            # size of layer1_input: B x 1 x 1 x100
+            layer1_inputs.append(layer1_input)
         # final vector z = concatenate of all max features B x 1 x 1 x 300
         layer1_input = T.concatenate(layer1_inputs, 1)
-
-        final_vector_dim = 50
+        final_vector_dim = self.hidden_units[0] * 3
         hidden_layer = HiddenLayer(rng, utils.Tanh, final_vector_dim, self.hidden_units[0])
         # hidden layer dropout still use weight and bias of hidden layer. It just
         # cuts off some neuron randomly with drop_out_rate
@@ -87,9 +89,10 @@ class Model:
         full_connect.predict()
 
         # create a list of all model parameters to be fit by gradient descent
-        params = hidden_layer.params + full_connect.params + conv_layer.params
-        # for conv in cnet:
-        #     params += conv.params
+        # params = hidden_layer.params + full_connect.params + conv_layer.params
+        params = hidden_layer.params + full_connect.params
+        for conv in cnet:
+            params += conv.params
         # calculate cost for normal model
         cost = full_connect.negative_log_likelihood(y)
         # create a list of gradients for all model parameters
