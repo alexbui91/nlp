@@ -59,18 +59,10 @@ class Model:
 
         #init networks
         rng = np.random.RandomState(3435)
-        
-        final_vector_dim = self.hidden_units[0] * len(self.filter_size)
-        hidden_layer = HiddenLayer(rng, utils.Tanh, self.hidden_units[0], final_vector_dim)
-        # hidden layer dropout still use weight and bias of hidden layer. It just
-        # cuts off some neuron randomly with drop_out_rate
-        hidden_layer_dropout = HiddenLayerDropout(rng, utils.Tanh, self.dropout_rate, final_vector_dim, final_vector_dim, hidden_layer.W, hidden_layer.b)
-        # apply full connect layer to final vector
-        full_connect = FullConnectLayer(rng, (final_vector_dim, 2))
-
         # create convolution network for each window size 3, 4, 5
         conv_layer = conv_layer = ConvolutionLayer(rng, (self.hidden_units[0], 1, 3, self.img_width),
                                           (self.batch_size, 1, self.img_height, self.img_width), [self.img_height - 3 + 1, 1])
+
         layer0_input = conv_layer.predict(layer0_input)
         # size of layer0_input: B x 1 x 100 x 1
         layer1_input = layer0_input.flatten(2)
@@ -78,12 +70,21 @@ class Model:
         layer1_inputs.append(layer1_input)
         # final vector z = concatenate of all max features B x 1 x 1 x 300
         layer1_input = T.concatenate(layer1_inputs, 1)
+
+        final_vector_dim = 50
+        hidden_layer = HiddenLayer(rng, utils.Tanh, final_vector_dim, final_vector_dim)
+        # hidden layer dropout still use weight and bias of hidden layer. It just
+        # cuts off some neuron randomly with drop_out_rate
+        hidden_layer_dropout = HiddenLayerDropout(rng, utils.Tanh, self.dropout_rate, final_vector_dim, final_vector_dim, hidden_layer.W, hidden_layer.b)
+        # apply full connect layer to final vector
+        full_connect = FullConnectLayer(rng, (final_vector_dim, 2))
+
         hidden_layer.setInput(layer1_input)
         hidden_layer_dropout.setInput(layer1_input)
         hidden_layer.predict()
         full_connect.setInput(hidden_layer.output)
         full_connect.predict()
-        
+
         # create a list of all model parameters to be fit by gradient descent
         params = hidden_layer.params + full_connect.params + conv_layer.params
         # for conv in cnet:
