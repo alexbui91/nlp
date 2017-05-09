@@ -11,7 +11,7 @@ import utils
 class Model:
 
     def __init__(self, word_vectors, training_data, dev_data, test_data, img_width=300, img_height=53,
-                 hidden_units=[100, 2], dropout_rate=0.5, filter_size=[3, 4, 5],
+                 hidden_units=[50, 2], dropout_rate=0.5, filter_size=[3, 4, 5],
                  batch_size=50, epochs=11, patience=20, learning_rate=0.13, conv_non_linear="tanh"):
         self.word_vectors = word_vectors
         self.fft = None

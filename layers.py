@@ -15,9 +15,8 @@ class ConvolutionLayer(object):
         self.input = input
         self.filter_shape = filter_shape
         self.input_shape = input_shape
-        print(input_shape)
-        self.poolsize = poolsize
         self.non_linear = non_linear
+        self.poolsize = poolsize
         # there are "num input feature maps * filter height * filter width"
         # inputs to each hidden unit
         fan_in = np.prod(filter_shape[1:])
