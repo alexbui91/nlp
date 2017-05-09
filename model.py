@@ -11,7 +11,7 @@ import utils
 class Model:
 
     def __init__(self, word_vectors, training_data, dev_data, test_data, img_width=300, img_height=53,
-                 hidden_units=[50, 2], dropout_rate=0.5, filter_size=[3, 4, 5],
+                 hidden_units=[100, 2], dropout_rate=0.5, filter_size=[3, 4, 5],
                  batch_size=50, epochs=11, patience=20, learning_rate=0.13, conv_non_linear="tanh"):
         self.word_vectors = word_vectors
         self.fft = None
@@ -74,7 +74,8 @@ class Model:
             layer1_inputs.append(layer1_input)
         # final vector z = concatenate of all max features B x 1 x 1 x 300
         layer1_input = T.concatenate(layer1_inputs, 1)
-        final_vector_dim = self.hidden_units[0] * 3
+        print(T.shape(layer1_input))
+        final_vector_dim = self.hidden_units[0]
         hidden_layer = HiddenLayer(rng, utils.Tanh, final_vector_dim, self.hidden_units[0])
         # hidden layer dropout still use weight and bias of hidden layer. It just
         # cuts off some neuron randomly with drop_out_rate
