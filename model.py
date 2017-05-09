@@ -163,7 +163,7 @@ class Model:
                 if stop_count == self.patience:
                     break
             average_test_score = total_test_score / n_test_batches 
-            print(('epoch %i, test error of best model %f %%') % (epoch, n_train_batches, average_test_score * 100.))
+            print(('epoch %i, test error of %f example is: %.2f') % (epoch, n_train_batches, average_test_score * 100.))
             print('epoch: %i, training time: %.2f secs; with cost: %.2f' % (epoch, time.time() - start, total_cost_train))
 
     def initNetwork(self):
