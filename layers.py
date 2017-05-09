@@ -107,7 +107,7 @@ class FullConnectLayer(object):
     def __init__(self, rng, layers_size):
         W_bound = np.sqrt(6. / (layers_size[0] + layers_size[1]))
         # convert size to avoid transpose. (2 x 300)
-        w_size = (layers_size[1], layers_size[0])
+        w_size = (layers_size[0], layers_size[1])
         self.W = theano.shared(np.asarray(rng.uniform(low=-W_bound, high=W_bound, size=w_size), dtype=theano.config.floatX), borrow=True, name="W_full_connect")
         b_values = np.zeros((layers_size[1],), dtype=theano.config.floatX)
         self.b = theano.shared(value=b_values, name='b')
@@ -121,7 +121,7 @@ class FullConnectLayer(object):
         self.y_pred = T.argmax(y_p, axis=1)
 
     def predict_p(self):
-        self.y_prob = T.nnet.softmax(T.dot(self.W, self.input_vector) + self.b)
+        self.y_prob = T.nnet.softmax(T.dot(self.input_vector, self.W) + self.b)
         return self.y_prob
 
     def negative_log_likelihood(self, y):

@@ -72,10 +72,10 @@ class Model:
         layer1_input = T.concatenate(layer1_inputs, 1)
 
         final_vector_dim = 50
-        hidden_layer = HiddenLayer(rng, utils.Tanh, final_vector_dim, final_vector_dim)
+        hidden_layer = HiddenLayer(rng, utils.Tanh, final_vector_dim, self.hidden_layer[0])
         # hidden layer dropout still use weight and bias of hidden layer. It just
         # cuts off some neuron randomly with drop_out_rate
-        hidden_layer_dropout = HiddenLayerDropout(rng, utils.Tanh, self.dropout_rate, final_vector_dim, final_vector_dim, hidden_layer.W, hidden_layer.b)
+        hidden_layer_dropout = HiddenLayerDropout(rng, utils.Tanh, self.dropout_rate, final_vector_dim, self.hidden_layer[0], hidden_layer.W, hidden_layer.b)
         # apply full connect layer to final vector
         full_connect = FullConnectLayer(rng, (final_vector_dim, 2))
 
