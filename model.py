@@ -37,7 +37,6 @@ class Model:
     #     self.fft = theano.function([x], rfft)
 
     def trainNet(self):
-        cnet, hidden_layer, hidden_layer_dropout, full_connect = self.initNetwork()
         # init data for model
         n_train_batches = len(self.test_data[0]) // self.batch_size
         n_val_batches = len(self.dev_data[0]) // self.batch_size
@@ -57,13 +56,26 @@ class Model:
         layer0_input = Words[T.cast(x.flatten(), dtype="int32")].reshape(
             (self.batch_size, 1, self.img_height, self.img_width))
         layer1_inputs = list()
+
+        #init networks
+        rng = np.random.RandomState(3435)
+        
+        final_vector_dim = self.hidden_units[0] * len(self.filter_size)
+        hidden_layer = HiddenLayer(rng, utils.Tanh, self.hidden_units[0], final_vector_dim)
+        # hidden layer dropout still use weight and bias of hidden layer. It just
+        # cuts off some neuron randomly with drop_out_rate
+        hidden_layer_dropout = HiddenLayerDropout(rng, utils.Tanh, self.dropout_rate, final_vector_dim, final_vector_dim, hidden_layer.W, hidden_layer.b)
+        # apply full connect layer to final vector
+        full_connect = FullConnectLayer(rng, (final_vector_dim, 2))
+
         # create convolution network for each window size 3, 4, 5
-        for conv_layer in cnet:
-            layer0_input = conv_layer.predict(layer0_input)
-            # size of layer0_input: B x 1 x 100 x 1
-            layer1_input = layer0_input.flatten(2)
-            # size of layer1_input: B x 1 x 1 x100
-            layer1_inputs.append(layer1_input)
+        conv_layer = conv_layer = ConvolutionLayer(rng, (self.hidden_units[0], 1, 3, self.img_width),
+                                          (self.batch_size, 1, self.img_height, self.img_width), [self.img_height - 3 + 1, 1])
+        layer0_input = conv_layer.predict(layer0_input)
+        # size of layer0_input: B x 1 x 100 x 1
+        layer1_input = layer0_input.flatten(2)
+        # size of layer1_input: B x 1 x 1 x100
+        layer1_inputs.append(layer1_input)
         # final vector z = concatenate of all max features B x 1 x 1 x 300
         layer1_input = T.concatenate(layer1_inputs, 1)
         hidden_layer.setInput(layer1_input)
@@ -71,10 +83,11 @@ class Model:
         hidden_layer.predict()
         full_connect.setInput(hidden_layer.output)
         full_connect.predict()
+        
         # create a list of all model parameters to be fit by gradient descent
-        params = hidden_layer.params + full_connect.params
-        for conv in cnet:
-            params += conv.params
+        params = hidden_layer.params + full_connect.params + conv_layer.params
+        # for conv in cnet:
+        #     params += conv.params
         # calculate cost for normal model
         cost = full_connect.negative_log_likelihood(y)
         # create a list of gradients for all model parameters
