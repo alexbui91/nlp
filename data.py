@@ -17,8 +17,25 @@ class Data:
         self.vocabs['UND'] = 0
         self.vectors = None
 
-    def loadWordVectors(self):
+    def loadWordVectorBigSet(self, suffix='large'):
+        self.initData()
+        file_vectors = "vectors_"+suffix+".txt"
+        file_mapping = "vocabs_"+suffix+".txt"
         self.data = KeyedVectors.load_word2vec_format(self.src, binary=True)
+        tmp = list()
+        tmp.append(np.zeros((1, len(self.data['the'])), dtype=theano.config.floatX))
+        for index, (word, vocab) in enumerate(self.data.vocab.iteritems()): 
+            vector = self.data[word]
+            tmp.append(np.array(vector, dtype=theano.config.floatX))
+            self.vocabs[word] = index
+        del self.data
+        self.vectors = np.array(tmp, dtype=theano.config.floatX)                    
+        utils.save_file(file_vectors, self.vectors)
+        utils.save_file(file_mapping, self.vocabs)
+
+    def release_memory():
+        del self.vectors
+        del self.vocabs
 
     def loadWordVectorsFromText(self):
         self.initData()

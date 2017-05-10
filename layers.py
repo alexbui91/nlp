@@ -7,30 +7,42 @@ import numpy as np
 import utils
 
 
-# convolution layer
-class ConvolutionLayer(object):
-    def __init__(self, rng, filter_shape, input_shape, poolsize=(2, 2), non_linear="tanh"):
+#class layer
+class NetworkLayer(object):
 
+    def initHyperParamsFromValue(self, W, b, name="values"):
+        W_param = theano.shared(value=W, borrow=True, name=("W_" + name))
+        b_param = theano.shared(value=b, borrow=True, name=("b_" + name))
+        self.W = W_param
+        self.b = b_param
+        self.params = [self.W, self.b]
+    
+# convolution layer
+class ConvolutionLayer(NetworkLayer):
+    def __init__(self, rng=None, filter_shape=None, input_shape=None, poolsize=(2, 2), non_linear="tanh"):
         assert input_shape[1] == filter_shape[1]
         self.input = input
         self.filter_shape = filter_shape
         self.input_shape = input_shape
         self.non_linear = non_linear
         self.poolsize = poolsize
+        self.rng = rng
+
+    def initHyperParams(self):
         # there are "num input feature maps * filter height * filter width"
         # inputs to each hidden unit
-        fan_in = np.prod(filter_shape[1:])
+        fan_in = np.prod(self.filter_shape[1:])
         # each unit in the lower layer receives a gradient from:
         # "num output feature maps * filter height * filter width" /
         #   pooling size
-        fan_out = (filter_shape[0] * np.prod(filter_shape[2:]) / np.prod(poolsize))
+        fan_out = (self.filter_shape[0] * np.prod(self.filter_shape[2:]) / np.prod(self.poolsize))
         # initialize weights with random weights
         if self.non_linear == "none" or self.non_linear == "relu":
-            self.W = theano.shared(np.asarray(rng.uniform(low=-0.01, high=0.01, size=filter_shape), dtype=theano.config.floatX), borrow=True, name="W_conv")
+            self.W = theano.shared(np.asarray(rng.uniform(low=-0.01, high=0.01, size=self.filter_shape), dtype=theano.config.floatX), borrow=True, name="W_conv")
         else:
             W_bound = np.sqrt(6. / (fan_in + fan_out))
-            self.W = theano.shared(np.asarray(rng.uniform(low=-W_bound, high=W_bound, size=filter_shape), dtype=theano.config.floatX), borrow=True, name="W_conv")
-        b_values = np.zeros((filter_shape[0],), dtype=theano.config.floatX)
+            self.W = theano.shared(np.asarray(self.rng.uniform(low=-W_bound, high=W_bound, size=self.filter_shape), dtype=theano.config.floatX), borrow=True, name="W_conv")
+        b_values = np.zeros((self.filter_shape[0],), dtype=theano.config.floatX)
         self.b = theano.shared(value=b_values, borrow=True, name="b_conv")
         self.params = [self.W, self.b]
 
@@ -49,11 +61,11 @@ class ConvolutionLayer(object):
 
 
 # perform hidden layer before full connect layer
-class HiddenLayer(object):
+class HiddenLayer(NetworkLayer):
     # n_in is the dimension of incomming vector, n_out is the dimension of out_comming vector
     # activation is the performing function (tanh, softmax, anw)
     # rng: random probability to to perform dropout later
-    def __init__(self, rng, activation="ReLU", n_in=None, n_out=None, W=None, b=None, input_vectors=None):
+    def __init__(self, rng=None, activation="ReLU", n_in=None, n_out=None, W=None, b=None, input_vectors=None):
 
         self.rng = rng
         self.activation = activation
@@ -62,7 +74,7 @@ class HiddenLayer(object):
         self.n_out = n_out
         self.W = W
         self.b = b
-        if self.n_in is not None and self.n_out is not None and (self.W is None or self.b is None):
+        if self.n_in is not None and self.n_out is not None:
             self.initHyperParams()
 
     def setInput(self, input_vectors):
@@ -74,10 +86,10 @@ class HiddenLayer(object):
                 W_values = np.asarray(0.01 * self.rng.standard_normal(size=(self.n_in, self.n_out)), dtype=theano.config.floatX)
             else:
                 W_values = np.asarray(self.rng.uniform(low=-np.sqrt(6. / (self.n_in + self.n_out)), high=np.sqrt(6. / (self.n_in + self.n_out)), size=(self.n_in, self.n_out)), dtype=theano.config.floatX)
-            self.W = theano.shared(value=W_values, name='W')
+            self.W = theano.shared(value=W_values, borrow=True, name='W')
         if self.b is None:
             b_values = np.zeros((self.n_out,), dtype=theano.config.floatX)
-            self.b = theano.shared(value=b_values, name='b')
+            self.b = theano.shared(value=b_values, borrow=True, name='b')
         self.params = [self.W, self.b]
 
     def setDropOutRate(self, drop_out_rate):
@@ -102,17 +114,21 @@ class HiddenLayerDropout(HiddenLayer):
 
 
 # full connect here is final layer, logistic regression => prob to calculate cost function y^ = softmax (W^T * input + b)
-class FullConnectLayer(object):
+class FullConnectLayer(NetworkLayer):
 
-    def __init__(self, rng, layers_size):
-        W_bound = np.sqrt(6. / (layers_size[0] + layers_size[1]))
+    def __init__(self, rng=None, layers_size=None):
+        self.rng = rng
+        self.layers_size = layers_size
+
+    def initHyperParams(self):
+        W_bound = np.sqrt(6. / (self.layers_size[0] + self.layers_size[1]))
         # convert size to avoid transpose. (2 x 300)
-        w_size = (layers_size[0], layers_size[1])
-        self.W = theano.shared(np.asarray(rng.uniform(low=-W_bound, high=W_bound, size=w_size), dtype=theano.config.floatX), borrow=True, name="W_full_connect")
-        b_values = np.zeros((layers_size[1],), dtype=theano.config.floatX)
+        w_size = (self.layers_size[0], self.layers_size[1])
+        self.W = theano.shared(np.asarray(self.rng.uniform(low=-W_bound, high=W_bound, size=w_size), dtype=theano.config.floatX), borrow=True, name="W_full_connect")
+        b_values = np.zeros((self.layers_size[1],), dtype=theano.config.floatX)
         self.b = theano.shared(value=b_values, name='b')
         self.params = [self.W, self.b]
-
+    
     def setInput(self, inp):
         self.input_vector = inp
 

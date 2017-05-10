@@ -9,8 +9,9 @@ import utils
 
 from data import Data
 
+word_vectors, vocabs = None, None
 
-def process_data(data):
+def process_data(data, isGetFirst=True):
     default_del = '|999999|'
     #results_x with size: sentence_size * sentences_words_length * word_vector_size
     results_y = list()
@@ -22,15 +23,20 @@ def process_data(data):
     cols = None
     c1 = 0
     for row in data:
-        cols = row.split(default_del)
-        c1 = int(cols[0])
-        if c1 == 4:
-            c1 = 1
-        else:
-            c1 = 0
-        results_y.append(c1)
-        words = cols[-1].split(' ')
-        words[-1].replace('\n', '')
+        words = None
+        if isGetFirst:
+            cols = row.split(default_del)
+            c1 = int(cols[0])
+            if c1 == 4:
+                c1 = 1
+            else:
+                c1 = 0
+            results_y.append(c1)
+            words = cols[-1].split(' ')
+            words[-1].replace('\n', '')
+        else: 
+            words = row.split(' ')
+            words[-1].replace('\n', '')
         sent_length = len(words)
         # word_indices = list()
         # for w in words:
@@ -70,13 +76,38 @@ def loadWordVectors():
     return d.vectors, d.vocabs
 
 
-def e(path = '../data/', training_path='training_twitter_small.txt', dev_path='dev_twitter.txt', test_path='test_twitter.txt'):
+def init_test(test_path=''):
+    global word_vectors, vocabs
+    if word_vectors is None or vocabs is None:
+        word_vectors, vocabs = loadWordVectors()
+    if not test_path:
+        while True:
+            sent = input("Give me a sentence: ")
+            words = sent.split(' ')
+            test_x = make_sentence_idx(vocabs, [words], 1)
+            model = Model(img_width=50, img_height=1)
+            y_pred = model.build_test_model((test_x, None, 1))
+            print(y_pred)
+    else: 
+        #auto test path_file
+        with open(test_path, 'r') as test:
+            test_data = test.readlines()
+            test_y, test_sent, test_len = process_data(test_data, False)
+            test_x = make_sentence_idx(vocabs, test_sent, test_len)
+            model = Model(img_width=50, img_height=test_len)
+            y_pred = model.build_test_model((test_x, test_y, test_len))
+            print(y_pred)
+
+
+def e(path = '../data/', training_path='training_twitter.txt', dev_path='dev_twitter.txt', test_path='test_twitter.txt'):
     # you can modify this data path. Currently, this path is alongside with code directory
+    global word_vectors, vocabs 
     datafile = 'sentiment_dataset.txt'
     training_path = path + training_path
     dev_path = path + dev_path
     test_path = path + test_path
-    word_vectors, vocabs = loadWordVectors()
+    if word_vectors is None or vocabs is None:
+        word_vectors, vocabs = loadWordVectors()
     img_width = 50
     if os.path.exists(datafile):
         with open(datafile, 'rb') as f:

@@ -1,6 +1,7 @@
 import theano
 import theano.tensor as T
 import pickle
+import os.path as path
 
 def ReLU(x):
     y = T.maximum(0.0, x)
@@ -48,3 +49,10 @@ def find_largest_number(num1, num2, num3):
 def save_file(name, obj):
     with open(name, 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+
+def load_file(pathfile):
+    if path.exists(pathfile):
+        with open(pathfile, 'rb') as f:
+            data = pickle.load(f)
+        return data 
