@@ -19,8 +19,8 @@ class Data:
 
     def loadWordVectorBigSet(self, suffix='large'):
         self.initData()
-        file_vectors = "vectors_"+suffix+".txt"
-        file_mapping = "vocabs_"+suffix+".txt"
+        file_vectors = "data/vectors_"+suffix+".txt"
+        file_mapping = "data/vocabs_"+suffix+".txt"
         self.data = KeyedVectors.load_word2vec_format(self.src, binary=True)
         tmp = list()
         tmp.append(np.zeros((1, len(self.data['the'])), dtype=theano.config.floatX))
@@ -39,8 +39,8 @@ class Data:
 
     def loadWordVectorsFromText(self):
         self.initData()
-        file_vectors = "vectors.txt"
-        file_mapping = "vocabs.txt"
+        file_vectors = "data/vectors.txt"
+        file_mapping = "data/vocabs.txt"
         if path.exists(file_vectors) and path.exists(file_mapping):
             with open(file_vectors, 'rb') as f:
                 self.vectors = pickle.load(f)

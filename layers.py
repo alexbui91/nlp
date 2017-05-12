@@ -122,11 +122,18 @@ class FullConnectLayer(NetworkLayer):
 
     def initHyperParams(self):
         W_bound = np.sqrt(6. / (self.layers_size[0] + self.layers_size[1]))
-        # convert size to avoid transpose. (2 x 300)
         w_size = (self.layers_size[0], self.layers_size[1])
-        self.W = theano.shared(np.asarray(self.rng.uniform(low=-W_bound, high=W_bound, size=w_size), dtype=theano.config.floatX), borrow=True, name="W_full_connect")
-        b_values = np.zeros((self.layers_size[1],), dtype=theano.config.floatX)
-        self.b = theano.shared(value=b_values, name='b')
+        # random weight, bias with initial values
+        # self.W = theano.shared(np.asarray(self.rng.uniform(low=-W_bound, high=W_bound, size=w_size), dtype=theano.config.floatX), borrow=True, name="W_full_connect")
+        # b_values = np.zeros((self.layers_size[1],), dtype=theano.config.floatX)
+        # self.b = theano.shared(value=b_values, name='b')
+        # random weight, bias with zeros values
+        self.W = theano.shared(
+                    value=np.zeros(w_size, dtype=theano.config.floatX),
+                    name='W')
+        self.b = theano.shared(
+                    value=np.zeros((self.layers_size[1],), dtype=theano.config.floatX),
+                    name='b')
         self.params = [self.W, self.b]
     
     def setInput(self, inp):

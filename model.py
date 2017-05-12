@@ -37,9 +37,10 @@ class Model:
 
     def trainNet(self):
         # init data for model
+        test_len = len(self.test_data[0])
         n_train_batches = len(self.training_data[0]) // self.batch_size
         n_val_batches = len(self.dev_data[0]) // self.batch_size
-        n_test_batches = len(self.test_data[0]) // self.batch_size
+        n_test_batches = test_len // self.batch_size
         test_set_x, test_set_y = self.shared_dataset(self.test_data)
         val_set_x, val_set_y = self.shared_dataset(self.dev_data)
         train_set_x, train_set_y = self.shared_dataset(self.training_data)
@@ -164,8 +165,8 @@ class Model:
                 if stop_count == self.patience:
                     break
             average_test_epoch_score = test_epoch_score / n_test_batches
-            print(('epoch %i, test error of %f example is: %.5f') %
-                  (epoch, n_train_batches, average_test_epoch_score * 100.))
+            print(('epoch %i, test error of %i example is: %.5f') %
+                  (epoch, test_len, average_test_epoch_score * 100.))
             print('epoch: %i, training time: %.2f secs; with cost: %.2f' %
                   (epoch, time.time() - start, epoch_cost_train))
         self.save_trained_params(cnet, hidden_layer, full_connect)
