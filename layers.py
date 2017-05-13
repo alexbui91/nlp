@@ -157,6 +157,8 @@ class FullConnectLayer(NetworkLayer):
         if y.ndim != self.y_pred.ndim:
             raise TypeError('y should have the same shape as self.y_pred', ('y', y.type, 'y_pred', self.y_pred.type))
         if y.dtype.startswith('int'):
+            #return total different values between target vs prediction of one batch
+            #after that, calculate average over batch
             return T.mean(T.neq(self.y_pred, y))
         else:
             raise NotImplementedError()

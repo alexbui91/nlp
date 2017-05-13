@@ -99,7 +99,7 @@ def init_test(test_path=''):
             print(y_pred)
 
 
-def exe(path = '../data/', training_path='training_twitter_small.txt', dev_path='dev_twitter_small.txt', test_path='test_twitter.txt'):
+def exe(path = '../data/', training_path='training_twitter.txt', dev_path='dev_twitter.txt', test_path='test_twitter.txt'):
     # you can modify this data path. Currently, this path is alongside with code directory
     global word_vectors, vocabs 
     datafile = 'data/sentiment_dataset.txt'

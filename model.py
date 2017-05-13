@@ -146,10 +146,9 @@ class Model:
                 val_losses = [val_model(i) for i in xrange(n_val_batches)]
                 val_losses = np.array(val_losses)
                 # in valuation phase (dev phase, error need to be reduce gradually and not upturn)
-                # gain = 1 - lost
                 # if val_gain > best_gain => re assign and stop_count = 0 else
                 # stop_count ++.
-                # average of losses during evaluate
+                # average of losses during evaluate => this number may be larger than 1
                 val_batch_lost = np.mean(val_losses)
                 if val_batch_lost < best_batch_lost:
                     best_batch_lost = val_batch_lost
