@@ -127,8 +127,8 @@ class Model:
             x: test_set_x[index * self.batch_size: (index + 1) * self.batch_size],
             y: test_set_y[index * self.batch_size: (index + 1) * self.batch_size]
         })
-        val_batch_gain = 0
-        best_batch_gain = 0
+        val_batch_lost = 0
+        best_batch_lost = 0
         stop_count = 0
         epoch = 0
         while(epoch < self.epochs):
@@ -145,16 +145,14 @@ class Model:
                 # eval
                 val_losses = [val_model(i) for i in xrange(n_val_batches)]
                 val_losses = np.array(val_losses)
-                print(val_losses)
                 # in valuation phase (dev phase, error need to be reduce gradually and not upturn)
                 # gain = 1 - lost
                 # if val_gain > best_gain => re assign and stop_count = 0 else
                 # stop_count ++.
                 # average of losses during evaluate
-                break
-                val_batch_gain = 1 - np.mean(val_losses)
-                if val_batch_gain > best_batch_gain:
-                    best_batch_gain = val_batch_gain
+                val_batch_lost = np.mean(val_losses)
+                if val_batch_lost < best_batch_lost:
+                    best_batch_lost = val_batch_lost
                     stop_count = 0
                     # test it on the test set
                     test_losses = [

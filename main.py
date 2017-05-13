@@ -112,7 +112,7 @@ def exe(path = '../data/', training_path='training_twitter_small.txt', dev_path=
     if os.path.exists(datafile):
         with open(datafile, 'rb') as f:
             dataset = pickle.load(f)
-            model = Model(word_vectors, dataset['train'], dataset['dev'], dataset['test'], img_width, dataset['max_sent_length'], epochs=1)
+            model = Model(word_vectors, dataset['train'], dataset['dev'], dataset['test'], img_width, dataset['max_sent_length'], epochs=1, patience=10)
             model.trainNet()
     else:
         with open(training_path, 'r') as train, open(dev_path, 'r') as dev, open(test_path, 'r') as test:
@@ -138,5 +138,5 @@ def exe(path = '../data/', training_path='training_twitter_small.txt', dev_path=
             dataset['max_sent_length'] = max_sent_length
             del train_x, train_y, test_x, test_y, dev_x, dev_y, max_sent_length
             utils.save_file(datafile, dataset)
-            model = Model(word_vectors, dataset['train'], dataset['dev'], dataset['test'], img_width, dataset['max_sent_length'], epochs=1)
+            model = Model(word_vectors, dataset['train'], dataset['dev'], dataset['test'], img_width, dataset['max_sent_length'], epochs=1, patience=10)
             model.trainNet()
