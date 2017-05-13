@@ -99,7 +99,7 @@ def init_test(test_path=''):
             print(y_pred)
 
 
-def exe(path = '../data/', training_path='training_twitter.txt', dev_path='dev_twitter.txt', test_path='test_twitter.txt'):
+def exe(path = '../data/', training_path='training_twitter_small.txt', dev_path='dev_twitter_small.txt', test_path='test_twitter.txt'):
     # you can modify this data path. Currently, this path is alongside with code directory
     global word_vectors, vocabs 
     datafile = 'data/sentiment_dataset.txt'
@@ -112,7 +112,7 @@ def exe(path = '../data/', training_path='training_twitter.txt', dev_path='dev_t
     if os.path.exists(datafile):
         with open(datafile, 'rb') as f:
             dataset = pickle.load(f)
-            model = Model(word_vectors, dataset['train'], dataset['dev'], dataset['test'], img_width, dataset['max_sent_length'], epochs=10)
+            model = Model(word_vectors, dataset['train'], dataset['dev'], dataset['test'], img_width, dataset['max_sent_length'], epochs=1)
             model.trainNet()
     else:
         with open(training_path, 'r') as train, open(dev_path, 'r') as dev, open(test_path, 'r') as test:
@@ -138,5 +138,5 @@ def exe(path = '../data/', training_path='training_twitter.txt', dev_path='dev_t
             dataset['max_sent_length'] = max_sent_length
             del train_x, train_y, test_x, test_y, dev_x, dev_y, max_sent_length
             utils.save_file(datafile, dataset)
-            model = Model(word_vectors, dataset['train'], dataset['dev'], dataset['test'], img_width, dataset['max_sent_length'], epochs=10)
+            model = Model(word_vectors, dataset['train'], dataset['dev'], dataset['test'], img_width, dataset['max_sent_length'], epochs=1)
             model.trainNet()
