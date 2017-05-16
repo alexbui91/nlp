@@ -2,6 +2,8 @@ from model import Model
 import pickle
 import numpy as np
 import theano
+import theano.tensor as T
+import theano.printing as printing
 
 import os.path
 import sys
@@ -10,6 +12,7 @@ import utils
 from data import Data
 
 word_vectors, vocabs = None, None
+
 
 def process_data(data, isGetFirst=True):
     default_del = '|999999|'
@@ -76,30 +79,35 @@ def loadWordVectors():
     return d.vectors, d.vocabs
 
 
-def init_test(test_path=''):
+def it(test_path='', sent=""):
     global word_vectors, vocabs
     if word_vectors is None or vocabs is None:
         word_vectors, vocabs = loadWordVectors()
     if not test_path:
-        while True:
-            sent = input("Give me a sentence: ")
+        if sent: 
             words = sent.split(' ')
-            test_x = make_sentence_idx(vocabs, [words], 1)
-            model = Model(img_width=50, img_height=1)
-            y_pred = model.build_test_model((test_x, None, 1))
-            print(y_pred)
+            sent_length = len(words)
+            if sent_length < 5:
+                sent_length = 5
+            test_x = make_sentence_idx(vocabs, [words], sent_length)
+            test_y = [1]
+            model = Model(word_vectors, img_width=50, img_height=sent_length, batch_size=1)
+            errors = model.build_test_model((test_x, test_y, sent_length))
+            if not errors:
+                print "sentiment is positive"
+            else: 
+                print "sentiment is negative"
     else: 
         #auto test path_file
         with open(test_path, 'r') as test:
             test_data = test.readlines()
-            test_y, test_sent, test_len = process_data(test_data, False)
+            test_y, test_sent, test_len = process_data(test_data)
             test_x = make_sentence_idx(vocabs, test_sent, test_len)
-            model = Model(img_width=50, img_height=test_len)
-            y_pred = model.build_test_model((test_x, test_y, test_len))
-            print(y_pred)
+            model = Model(word_vectors, img_width=50, img_height=test_len)
+            errors = model.build_test_model((test_x, test_y, test_len))
+            print(errors)
 
-
-def exe(path = '../data/', training_path='training_twitter.txt', dev_path='dev_twitter.txt', test_path='test_twitter.txt'):
+def exe(path = '../data/', training_path='training_twitter_med.txt', dev_path='dev_twitter_med.txt', test_path='test_twitter.txt'):
     # you can modify this data path. Currently, this path is alongside with code directory
     global word_vectors, vocabs 
     datafile = 'data/sentiment_dataset.txt'
@@ -112,7 +120,7 @@ def exe(path = '../data/', training_path='training_twitter.txt', dev_path='dev_t
     if os.path.exists(datafile):
         with open(datafile, 'rb') as f:
             dataset = pickle.load(f)
-            model = Model(word_vectors, dataset['train'], dataset['dev'], dataset['test'], img_width, dataset['max_sent_length'], epochs=5, patience=10)
+            model = Model(word_vectors, dataset['train'], dataset['dev'], dataset['test'], img_width, dataset['max_sent_length'], epochs=5, patience=20)
             model.trainNet()
     else:
         with open(training_path, 'r') as train, open(dev_path, 'r') as dev, open(test_path, 'r') as test:

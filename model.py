@@ -3,6 +3,7 @@ import time
 import numpy as np
 import theano
 import theano.tensor as T
+import theano.printing as printing
 
 from layers import ConvolutionLayer, HiddenLayer, HiddenLayerDropout, FullConnectLayer
 import utils
@@ -127,15 +128,17 @@ class Model:
             x: test_set_x[index * self.batch_size: (index + 1) * self.batch_size],
             y: test_set_y[index * self.batch_size: (index + 1) * self.batch_size]
         })
-        val_batch_lost = 0
-        best_batch_lost = 0
+        val_batch_lost = 1.
+        best_batch_lost = 1.
         stop_count = 0
         epoch = 0
         while(epoch < self.epochs):
             epoch_cost_train = 0.
             average_test_epoch_score = 0.
             test_epoch_score = 0.
+            total_test_time = 0
             epoch += 1
+            print("Start epoch: %i" % epoch)
             start = time.time()
             for mini_batch in xrange(n_train_batches):
                 epoch_cost_train += train_model(mini_batch)
@@ -159,16 +162,17 @@ class Model:
                         for i in range(n_test_batches)
                     ]
                     test_epoch_score += np.mean(test_losses)
+                    total_test_time += 1
                 else:
                     stop_count += 1
                 if stop_count == self.patience:
                     break
-            average_test_epoch_score = test_epoch_score / n_test_batches
+            average_test_epoch_score = test_epoch_score / total_test_time
             print(('epoch %i, test error of %i example is: %.5f') %
                   (epoch, test_len, average_test_epoch_score * 100.))
             print('epoch: %i, training time: %.2f secs; with cost: %.2f' %
                   (epoch, time.time() - start, epoch_cost_train))
-        # self.save_trained_params(cnet, hidden_layer, full_connect)
+        self.save_trained_params(cnet, hidden_layer, full_connect)
 
     def shared_dataset(self, data_xy, borrow=True):
         data_x, data_y = data_xy
@@ -190,10 +194,10 @@ class Model:
                 conv_params[window_size] = [param.get_value() for param in conv_layer.params]
             data['conv_layers'] = conv_params
         if data:
-            utils.save_file('trained_params', data)
+            utils.save_file('data/trained_params.txt', data)
         return data
         
-    def load_trained_params(self, path='trained_params'):
+    def load_trained_params(self, path='data/trained_params.txt'):
         data = utils.load_file(path)
         full_connect_params = data['full_connect_layer']
         hidden_layer_params = data['hidden_layer']
@@ -204,9 +208,13 @@ class Model:
         conv_p, hidden_p, full_p = self.load_trained_params()
         conv_layers, hidden_layer, full_connect = self.init_model_from_params(conv_p, hidden_p, full_p)
         data_x, data_y, input_height = data
+        test_len = len(data_x)
+        n_test_batches = test_len // self.batch_size
         x = T.matrix('x')
+        y = T.ivector('y')
+        index = T.lscalar()
         Words = theano.shared(value=self.word_vectors, name="Words", borrow=True)
-        layer0_input = Words[T.cast(x.flatten(), dtype="int32")].reshape((1, 1, input_height, self.img_width))
+        layer0_input = Words[T.cast(x.flatten(), dtype="int32")].reshape((self.batch_size, 1, input_height, self.img_width))
         layer1_inputs = list()
         for conv_layer in conv_layers:
             conv_output = conv_layer.predict(layer0_input)
@@ -215,12 +223,21 @@ class Model:
             # size of layer1_input: B x 1 x 1 x100
             layer1_inputs.append(layer1_input)
         output_conv = T.concatenate(layer1_inputs, 1)
-        hidden_layer.setInput(output_convs)
+        hidden_layer.setInput(output_conv)
         hidden_layer.predict()
         full_connect.setInput(hidden_layer.output)
         full_connect.predict()
-        x = theano.shared(np.asarray(data_x, dtype=theano.config.floatX), borrow=True)
-        return full_connect.y_pred
+        test_data_x = theano.shared(np.asarray(data_x, dtype=theano.config.floatX), borrow=True)
+        test_data_y = theano.shared(np.asarray(data_y, dtype='int32'), borrow=True)
+        test_model = theano.function([index], outputs=full_connect.errors(y), givens={
+            x: test_data_x[index * self.batch_size: (index + 1) * self.batch_size],
+            y: test_data_y[index * self.batch_size: (index + 1) * self.batch_size]
+        })
+        errors = 0.
+        for i in xrange(n_test_batches):
+            errors += test_model(i)
+        avg_errors = errors / n_test_batches
+        return avg_errors
     
     def init_model_from_params(self, conv_layers_params, hidden_layer_params, full_connect_params):
         rng = np.random.RandomState(3435)
@@ -233,7 +250,7 @@ class Model:
             if window_size in conv_layers_params:
                 conv_param = conv_layers_params[window_size]
                 conv_layer = ConvolutionLayer(rng,(self.hidden_units[0], 1, window_size, self.img_width),
-                                              (1, 1, self.img_height, self.img_width),
+                                              (self.batch_size, 1, self.img_height, self.img_width),
                                               [self.img_height - window_size + 1, 1])
                 conv_layer.initHyperParamsFromValue(conv_param[0], conv_param[-1], 'conv_layer')
                 conv_layers.append(conv_layer)
