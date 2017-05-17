@@ -72,14 +72,14 @@ def make_sentence_idx(vocabs, sents, max_sent_length):
     return results_x
 
 
-def loadWordVectors():
-    d = Data('../data/glove_text8.txt')
+def loadWordVectors(file):
+    d = Data(file)
     # d.loadWordVectors()
     d.loadWordVectorsFromText()
     return d.vectors, d.vocabs
 
 
-def it(test_path='', sent="Fuck you bitch"):
+def it(test_path='', sent='', dimension=50):
     global word_vectors, vocabs
     if word_vectors is None or vocabs is None:
         word_vectors, vocabs = loadWordVectors()
@@ -91,7 +91,7 @@ def it(test_path='', sent="Fuck you bitch"):
                 sent_length = 5
             test_x = make_sentence_idx(vocabs, [words], sent_length)
             test_y = [1]
-            model = Model(word_vectors, img_width=50, img_height=sent_length, batch_size=1)
+            model = Model(word_vectors, img_width=dimension, img_height=sent_length, batch_size=1)
             pred = model.build_test_model((test_x, test_y, sent_length))            
             if pred:
                 print "sentiment is positive"
@@ -103,11 +103,11 @@ def it(test_path='', sent="Fuck you bitch"):
             test_data = test.readlines()
             test_y, test_sent, test_len = process_data(test_data)
             test_x = make_sentence_idx(vocabs, test_sent, test_len)
-            model = Model(word_vectors, img_width=50, img_height=test_len)
+            model = Model(word_vectors, img_width=dimension, img_height=test_len)
             errors = model.build_test_model((test_x, test_y, test_len))
             print(errors)
 
-def exe(path = '../data/', training_path='training_twitter_med.txt', dev_path='dev_twitter_med.txt', test_path='test_twitter.txt'):
+def exe(path = '../data/', word_vector='glove_text8.txt', training_path='training_twitter_med.txt', dev_path='dev_twitter_med.txt', test_path='test_twitter.txt', img_width=50, epochs=5, patience=20):
     # you can modify this data path. Currently, this path is alongside with code directory
     global word_vectors, vocabs 
     datafile = 'data/sentiment_dataset.txt'
@@ -116,11 +116,10 @@ def exe(path = '../data/', training_path='training_twitter_med.txt', dev_path='d
     test_path = path + test_path
     if word_vectors is None or vocabs is None:
         word_vectors, vocabs = loadWordVectors()
-    img_width = 50
     if os.path.exists(datafile):
         with open(datafile, 'rb') as f:
             dataset = pickle.load(f)
-            model = Model(word_vectors, dataset['train'], dataset['dev'], dataset['test'], img_width, dataset['max_sent_length'], epochs=5, patience=20)
+            model = Model(word_vectors, dataset['train'], dataset['dev'], dataset['test'], img_width, dataset['max_sent_length'], epochs=epochs, patience=patience)
             model.trainNet()
     else:
         with open(training_path, 'r') as train, open(dev_path, 'r') as dev, open(test_path, 'r') as test:
