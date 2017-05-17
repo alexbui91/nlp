@@ -115,7 +115,7 @@ def exe(path = '../data/', word_vector='glove_text8.txt', training_path='trainin
     dev_path = path + dev_path
     test_path = path + test_path
     if word_vectors is None or vocabs is None:
-        word_vectors, vocabs = loadWordVectors(word_vector)
+        word_vectors, vocabs = loadWordVectors(path + word_vector)
     if os.path.exists(datafile):
         with open(datafile, 'rb') as f:
             dataset = pickle.load(f)
