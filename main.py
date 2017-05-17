@@ -79,7 +79,7 @@ def loadWordVectors():
     return d.vectors, d.vocabs
 
 
-def it(test_path='', sent=""):
+def it(test_path='', sent="Fuck you bitch"):
     global word_vectors, vocabs
     if word_vectors is None or vocabs is None:
         word_vectors, vocabs = loadWordVectors()
@@ -92,8 +92,8 @@ def it(test_path='', sent=""):
             test_x = make_sentence_idx(vocabs, [words], sent_length)
             test_y = [1]
             model = Model(word_vectors, img_width=50, img_height=sent_length, batch_size=1)
-            errors = model.build_test_model((test_x, test_y, sent_length))
-            if not errors:
+            pred = model.build_test_model((test_x, test_y, sent_length))            
+            if pred:
                 print "sentiment is positive"
             else: 
                 print "sentiment is negative"

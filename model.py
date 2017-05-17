@@ -229,14 +229,23 @@ class Model:
         full_connect.predict()
         test_data_x = theano.shared(np.asarray(data_x, dtype=theano.config.floatX), borrow=True)
         test_data_y = theano.shared(np.asarray(data_y, dtype='int32'), borrow=True)
-        test_model = theano.function([index], outputs=full_connect.errors(y), givens={
-            x: test_data_x[index * self.batch_size: (index + 1) * self.batch_size],
-            y: test_data_y[index * self.batch_size: (index + 1) * self.batch_size]
-        })
+      
         errors = 0.
-        for i in xrange(n_test_batches):
-            errors += test_model(i)
-        avg_errors = errors / n_test_batches
+        if test_len == 1:
+            test_model = theano.function([index],outputs=full_connect.get_predict(), on_unused_input='ignore', givens={
+                x: test_data_x[index * self.batch_size: (index + 1) * self.batch_size],
+                y: test_data_y[index * self.batch_size: (index + 1) * self.batch_size]
+            })
+            index = 0
+            avg_errors = test_model(index)
+        else:
+            test_model = theano.function([index], outputs=full_connect.errors(y), givens={
+                x: test_data_x[index * self.batch_size: (index + 1) * self.batch_size],
+                y: test_data_y[index * self.batch_size: (index + 1) * self.batch_size]
+            })
+            for i in xrange(n_test_batches):
+                errors += test_model(i)
+            avg_errors = errors / n_test_batches
         return avg_errors
     
     def init_model_from_params(self, conv_layers_params, hidden_layer_params, full_connect_params):

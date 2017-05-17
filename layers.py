@@ -162,3 +162,6 @@ class FullConnectLayer(NetworkLayer):
             return T.mean(T.neq(self.y_pred, y))
         else:
             raise NotImplementedError()
+
+    def get_predict(self):
+        return T.mean(self.y_pred)
