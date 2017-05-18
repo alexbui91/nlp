@@ -161,7 +161,9 @@ class Model:
                         test_model(i)
                         for i in range(n_test_batches)
                     ]
-                    test_epoch_score += np.mean(test_losses)
+                    avg_test_lost = np.mean(test_losses)
+                    print("test lost: %f" % avg_test_lost)
+                    test_epoch_score += avg_test_lost
                     total_test_time += 1
                 else:
                     stop_count += 1
