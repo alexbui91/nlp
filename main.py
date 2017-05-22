@@ -30,10 +30,10 @@ def process_data(data, isGetFirst=True):
         if isGetFirst:
             cols = row.split(default_del)
             c1 = int(cols[0])
-            if c1 == 4:
-                c1 = 1
-            else:
+            if c1 == 0:
                 c1 = 0
+            else:
+                c1 = 1
             results_y.append(c1)
             words = cols[-1].split(' ')
             words[-1].replace('\n', '')
@@ -79,10 +79,10 @@ def loadWordVectors(file):
     return d.vectors, d.vocabs
 
 
-def it(test_path='', sent='', dimension=50):
+def it(test_path='', sent='', word_vector='../data/glove_text8.txt', dimension=50):
     global word_vectors, vocabs
     if word_vectors is None or vocabs is None:
-        word_vectors, vocabs = loadWordVectors()
+        word_vectors, vocabs = loadWordVectors(word_vector)
     if not test_path:
         if sent: 
             words = sent.split(' ')
