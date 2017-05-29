@@ -1,6 +1,5 @@
 from model import Model
 import pickle
-import numpy as np
 import theano
 import theano.tensor as T
 import theano.printing as printing
@@ -35,9 +34,11 @@ def process_data(data, isGetFirst=True):
             else:
                 c1 = 1
             results_y.append(c1)
-            words = cols[-1].split(' ')
+            sents = cols[-1].lower()
+            words = sents.split(' ')
             words[-1].replace('\n', '')
         else: 
+            sents = row.lower()
             words = row.split(' ')
             words[-1].replace('\n', '')
         sent_length = len(words)
