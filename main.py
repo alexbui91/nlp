@@ -110,7 +110,7 @@ def it(test_path='', sent='', word_vector='../data/glove_text8.txt', dimension=5
 
 
 # main.exe(path = '../data/', word_vector='glove.6B.300d.txt', training_path='training_twitter.txt', dev_path='dev_twitter.txt', test_path='test_twitter.txt', img_width=300, epochs=11, patience=20)
-def exe(path = '../data/', word_vector='glove_text8.txt', training_path='training_twitter_med.txt', dev_path='dev_twitter_med.txt', test_path='test_twitter.txt', img_width=50, epochs=5, patience=20):
+def exe(path = '../data/', word_vector='glove_text8.txt', training_path='training_twitter_med.txt', dev_path='dev_twitter_med.txt', test_path='test_twitter.txt', img_width=50, epochs=5, patience=20, is_reload_data=False):
     # you can modify this data path. Currently, this path is alongside with code directory
     global word_vectors, vocabs 
     datafile = 'data/sentiment_dataset.txt'
@@ -119,7 +119,7 @@ def exe(path = '../data/', word_vector='glove_text8.txt', training_path='trainin
     test_path = path + test_path
     if word_vectors is None or vocabs is None:
         word_vectors, vocabs = loadWordVectors(path + word_vector)
-    if os.path.exists(datafile):
+    if os.path.exists(datafile) and !is_reload_data:
         with open(datafile, 'rb') as f:
             dataset = pickle.load(f)
             model = Model(word_vectors, dataset['train'], dataset['dev'], dataset['test'], img_width, dataset['max_sent_length'], epochs=epochs, patience=patience)
