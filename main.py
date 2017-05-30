@@ -110,7 +110,7 @@ def it(test_path='', sent='', word_vector='../data/glove_text8.txt', dimension=5
 
 
 # main.exe(path = '../data/', word_vector='glove.6B.300d.txt', training_path='training_twitter.txt', dev_path='dev_twitter.txt', test_path='test_twitter.txt', img_width=300, epochs=11, patience=20)
-def exe(path = '../data/', word_vector='glove_text8.txt', training_path='training_twitter_med.txt', dev_path='dev_twitter_med.txt', test_path='test_twitter.txt', img_width=50, epochs=5, patience=20, is_reload_data=False):
+def exe(path='../data/', word_vector='glove_text8.txt', training_path='training_twitter_med.txt', dev_path='dev_twitter_med.txt', test_path='test_twitter.txt', img_width=50, epochs=5, patience=20, is_reload_data=False):
     # you can modify this data path. Currently, this path is alongside with code directory
     global word_vectors, vocabs 
     datafile = 'data/sentiment_dataset.txt'
