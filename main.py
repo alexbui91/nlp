@@ -34,11 +34,11 @@ def process_data(data, isGetFirst=True):
             else:
                 c1 = 1
             results_y.append(c1)
-            sents = cols[-1].lower()
-            words = sents.split(' ')
+            sent = cols[-1].lower()
+            words = sent.split(' ')
             words[-1].replace('\n', '')
         else: 
-            sents = row.lower()
+            sent = row.lower()
             words = row.split(' ')
             words[-1].replace('\n', '')
         sent_length = len(words)
