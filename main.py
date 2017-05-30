@@ -119,7 +119,7 @@ def exe(path = '../data/', word_vector='glove_text8.txt', training_path='trainin
     test_path = path + test_path
     if word_vectors is None or vocabs is None:
         word_vectors, vocabs = loadWordVectors(path + word_vector)
-    if os.path.exists(datafile) and !is_reload_data:
+    if os.path.exists(datafile) and not is_reload_data:
         with open(datafile, 'rb') as f:
             dataset = pickle.load(f)
             model = Model(word_vectors, dataset['train'], dataset['dev'], dataset['test'], img_width, dataset['max_sent_length'], epochs=epochs, patience=patience)
