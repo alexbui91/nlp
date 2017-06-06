@@ -1,83 +1,11 @@
 from model import Model
-import pickle
-import theano
-import theano.tensor as T
-import theano.printing as printing
 import argparse
 import os.path
-import sys
 import utils
 
 from data import Data
 
 word_vectors, vocabs = None, None
-
-
-def process_data(data, isGetFirst=True):
-    default_del = '|999999|'
-    #results_x with size: sentence_size * sentences_words_length * word_vector_size
-    results_y = list()
-    sents = list()
-    max_sent_length = 0
-    sent_length = 0
-    words = None
-    # word_indices = None
-    cols = None
-    c1 = 0
-    for row in data:
-        words = None
-        if isGetFirst:
-            cols = row.split(default_del)
-            c1 = int(cols[0])
-            if c1 == 0:
-                c1 = 0
-            else:
-                c1 = 1
-            results_y.append(c1)
-            sent = cols[-1].lower()
-            words = sent.split(' ')
-            words[-1].replace('\n', '')
-        else: 
-            sent = row.lower()
-            words = row.split(' ')
-            words[-1].replace('\n', '')
-        sent_length = len(words)
-        # word_indices = list()
-        # for w in words:
-        #     if w in vocabs:
-        #         word_indices.append(vocabs[w])
-        # if word_indices:
-        #     sents.append([word_indices])
-        sents.append(words)
-        if sent_length > max_sent_length:
-            max_sent_length = sent_length
-    return results_y, sents, max_sent_length
-
-
-def make_sentence_idx(vocabs, sents, max_sent_length):
-    results_x = list()
-    w_vector = None
-    for sent in sents:
-        sent_length = len(sent)
-        sent_v = list()
-        for i in xrange(max_sent_length):
-            if i < sent_length:
-                if sent[i] in vocabs:
-                    sent_v.append(vocabs[sent[i]])
-                else: 
-                    sent_v.append(0)
-            else:
-                sent_v.append(0)
-        if sent_v: 
-            results_x.append(sent_v)
-    return results_x
-
-
-def loadWordVectors(file):
-    d = Data(file)
-    # d.loadWordVectors()
-    d.loadWordVectorsFromText()
-    return d.vectors, d.vocabs
 
 
 def it(test_path='', sent='', word_vector='../data/glove_text8.txt', dimension=50):
@@ -137,5 +65,6 @@ parser.add_argument('--patient', type=int, default=20)
 parser.add_argument('--epochs', type=int, default=20)
 
 args = parser.parse_args()
+
 
 exe(args.vectors, args.plvec, args.train, args.dev, args.test, args.width, args.max, args.epochs, args.patient)

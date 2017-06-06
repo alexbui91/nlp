@@ -60,6 +60,20 @@ def load_file(pathfile):
         return data 
 
 
+def make_sentence_idx(vocabs, sent, max_sent_length):
+    sent_v = list()
+    sent_length = len(sent)
+    for i in xrange(max_sent_length):
+        if i < sent_length:
+            if sent[i] in vocabs:
+                sent_v.append(vocabs[sent[i]])
+            else: 
+                sent_v.append(0)
+        else:
+            sent_v.append(0)
+    return sent_v
+
+
 def loadWordVectors(file, data_path):
     d = Data(file)
     d.loadWordVectorsFromText(data_path)
