@@ -121,7 +121,7 @@ def exe(word_vectors_file, vector_preloaded_path, train_path, dev_path, test_pat
         raise NotImplementedError()
     if word_vectors is None or vocabs is None:
         word_vectors, vocabs = utils.loadWordVectors(word_vectors_file, vector_preloaded_path)
-    model = Model(word_vectors, train, dev, test, img_width, maxlen, epochs, patience)
+    model = Model(word_vectors, train, dev, test, img_width, maxlen, epochs=epochs, patience=patience)
     model.trainNet()
 
 
