@@ -169,11 +169,10 @@ class Model:
                 if stop_count == self.patience:
                     stop_count = 0
                     break
-            average_test_epoch_score = test_epoch_score / total_test_time
-            print(('epoch %i, test error of %i example is: %.5f') %
-                  (epoch, test_len, average_test_epoch_score * 100.))
-            print('epoch: %i, training time: %.2f secs; with cost: %.2f' %
-                  (epoch, time.time() - start, epoch_cost_train))
+            if total_test_time:
+                average_test_epoch_score = test_epoch_score / total_test_time
+                print(('epoch %i, test error of %i example is: %.5f') % (epoch, test_len, average_test_epoch_score * 100.))
+            print('epoch: %i, training time: %.2f secs; with cost: %.2f' % (epoch, time.time() - start, epoch_cost_train))
         self.save_trained_params(cnet, hidden_layer, full_connect)
 
     def shared_dataset(self, data_xy, borrow=True):
