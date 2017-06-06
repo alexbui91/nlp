@@ -138,10 +138,12 @@ class Model:
             total_test_time = 0
             best_test = 0.
             epoch += 1
+            batch_test = 0
             print("Start epoch: %i" % epoch)
             start = time.time()
             for mini_batch in xrange(n_train_batches):
                 epoch_cost_train += train_model(mini_batch)
+                batch_test += 1
                 # perform early stopping to avoid overfitting (check with frequency or check every iteration)
                 # iter = (epoch - 1) * n_train_batches + minibatch_index
                 # if (iter + 1) % validation_frequency == 0
@@ -163,7 +165,7 @@ class Model:
                     ]
                     avg_test_lost = np.mean(test_losses)
                     # print("test lost: %f" % avg_test_lost)
-                    if best_test < avg_test_lost:
+                    if best_test > avg_test_lost:
                         best_test = avg_test_lost
                     test_epoch_score += avg_test_lost
                     total_test_time += 1
@@ -177,7 +179,8 @@ class Model:
                     print('Best test error: %f' % best_test)
                 average_test_epoch_score = test_epoch_score / total_test_time
                 print(('epoch %i, test error of %i example is: %.5f') % (epoch, test_len, average_test_epoch_score * 100.))
-            print('epoch: %i, training time: %.2f secs; with cost: %.2f' % (epoch, time.time() - start, epoch_cost_train))
+            if batch_test:
+                print('epoch: %i, training time: %.2f secs; with avg cost: %.2f' % (epoch, time.time() - start, epoch_cost_train / batch_test))
         self.save_trained_params(cnet, hidden_layer, full_connect)
 
     def shared_dataset(self, data_xy, borrow=True):
