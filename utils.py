@@ -2,6 +2,7 @@ import theano
 import theano.tensor as T
 import pickle
 import os.path as path
+from data import Data
 
 
 def ReLU(x):
