@@ -57,3 +57,9 @@ def load_file(pathfile):
         with open(pathfile, 'rb') as f:
             data = pickle.load(f)
         return data 
+
+
+def loadWordVectors(file, data_path):
+    d = Data(file)
+    d.loadWordVectorsFromText(data_path)
+    return d.vectors, d.vocabs
