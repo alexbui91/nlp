@@ -54,8 +54,7 @@ class Model:
         Words = theano.shared(value=self.word_vectors, name="Words", borrow=True)
         # resign from batch_size * 300 * height => batch_size * 1 * height * width
         # cast word index to vector in dictionary
-        layer0_input = Words[T.cast(x.flatten(), dtype="int32")].reshape(
-            (self.batch_size, 1, self.img_height, self.img_width))
+        layer0_input = T.cast(Words[T.cast(x.flatten(), dtype="int32")], dtype=theano.config.floatX).reshape((self.batch_size, 1, self.img_height, self.img_width))
         layer1_inputs = list()
         # init networks
         rng = np.random.RandomState(3435)
