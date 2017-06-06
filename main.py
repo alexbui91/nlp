@@ -110,7 +110,7 @@ def it(test_path='', sent='', word_vector='../data/glove_text8.txt', dimension=5
 
 
 # main.exe(path = '../data/', word_vector='glove.6B.300d.txt', training_path='training_twitter.txt', dev_path='dev_twitter.txt', test_path='test_twitter.txt', img_width=300, epochs=11, patience=20)
-def exe(word_vectors_file, vector_preloaded_path, train, dev, test, img_width, maxlen, epochs, patience):
+def exe(word_vectors_file, vector_preloaded_path, train_path, dev_path, test_path, img_width, maxlen, epochs, patience):
     # you can modify this data path. Currently, this path is alongside with code directory
     global word_vectors, vocabs
     if os.path.exists(train_path) and os.path.exists(dev_path) and os.path.exists(test_path):
