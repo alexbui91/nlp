@@ -167,6 +167,7 @@ class Model:
                 else:
                     stop_count += 1
                 if stop_count == self.patience:
+                    stop_count = 0
                     break
             average_test_epoch_score = test_epoch_score / total_test_time
             print(('epoch %i, test error of %i example is: %.5f') %
