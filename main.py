@@ -3,7 +3,7 @@ import pickle
 import theano
 import theano.tensor as T
 import theano.printing as printing
-
+import argparse
 import os.path
 import sys
 import utils
@@ -110,43 +110,32 @@ def it(test_path='', sent='', word_vector='../data/glove_text8.txt', dimension=5
 
 
 # main.exe(path = '../data/', word_vector='glove.6B.300d.txt', training_path='training_twitter.txt', dev_path='dev_twitter.txt', test_path='test_twitter.txt', img_width=300, epochs=11, patience=20)
-def exe(path='../data/', word_vector='glove_text8.txt', training_path='training_twitter_med.txt', dev_path='dev_twitter_med.txt', test_path='test_twitter.txt', img_width=50, epochs=5, patience=20, is_reload_data=False):
+def exe(word_vectors_file, vector_preloaded_path, train, dev, test, img_width, maxlen, epochs, patience):
     # you can modify this data path. Currently, this path is alongside with code directory
-    global word_vectors, vocabs 
-    datafile = 'data/sentiment_dataset.txt'
-    training_path = path + training_path
-    dev_path = path + dev_path
-    test_path = path + test_path
+    global word_vectors, vocabs
+    if os.path.exists(train_path) and os.path.exists(dev_path) and os.path.exists(test_path):
+        train = utils.load_file(train_path)
+        dev = utils.load_file(dev_path)
+        test = utils.load_file(test_path)
+    else: 
+        raise NotImplementedError()
     if word_vectors is None or vocabs is None:
-        word_vectors, vocabs = loadWordVectors(path + word_vector)
-    if os.path.exists(datafile) and not is_reload_data:
-        with open(datafile, 'rb') as f:
-            dataset = pickle.load(f)
-            model = Model(word_vectors, dataset['train'], dataset['dev'], dataset['test'], img_width, dataset['max_sent_length'], epochs=epochs, patience=patience)
-            model.trainNet()
-    else:
-        with open(training_path, 'r') as train, open(dev_path, 'r') as dev, open(test_path, 'r') as test:
-            training_data = train.readlines()
-            dev_data = dev.readlines()
-            test_data = test.readlines()
-            train_y, train_sent, train_len = process_data(training_data)
-            dev_y, dev_sent, dev_len = process_data(dev_data)
-            test_y, test_sent, test_len = process_data(test_data)
-            max_sent_length = utils.find_largest_number(train_len, dev_len, test_len)
+        word_vectors, vocabs = utils.loadWordVectors(word_vectors_file, vector_preloaded_path)
+    model = Model(word_vectors, train, dev, test, img_width, maxlen, epochs, patience)
+    model.trainNet()
 
-            train_x = make_sentence_idx(vocabs, train_sent, max_sent_length)
-            del(train_sent)
-            dev_x = make_sentence_idx(vocabs, dev_sent, max_sent_length)
-            del(dev_sent)
-            test_x = make_sentence_idx(vocabs, test_sent, max_sent_length)
-            del(test_sent)
-            dataset = dict()
 
-            dataset['train'] = (train_x, train_y)
-            dataset['test'] = (test_x, test_y)
-            dataset['dev'] = (dev_x, dev_y)
-            dataset['max_sent_length'] = max_sent_length
-            del train_x, train_y, test_x, test_y, dev_x, dev_y, max_sent_length
-            utils.save_file(datafile, dataset)
-            model = Model(word_vectors, dataset['train'], dataset['dev'], dataset['test'], img_width, dataset['max_sent_length'], epochs=5, patience=10)
-            model.trainNet()
+parser = argparse.ArgumentParser(description='Running CNN only')
+parser.add_argument('--vectors', type=str, default='/home/alex/Documents/nlp/data/glove.6B.50d.txt')
+parser.add_argument('--plvec', type=str, default='/home/alex/Documents/nlp/data')
+parser.add_argument('--train', type=str, default='/home/alex/Documents/nlp/code/data/50d.training_twitter_small.txt')
+parser.add_argument('--dev', type=str, default='/home/alex/Documents/nlp/code/data/50d.dev_twitter_small.txt')
+parser.add_argument('--test', type=str, default='/home/alex/Documents/nlp/code/data/50d.test_twitter.txt')
+parser.add_argument('--width', type=int, default=50)
+parser.add_argument('--max', type=int, default=140)
+parser.add_argument('--patient', type=int, default=20)
+parser.add_argument('--epochs', type=int, default=20)
+
+args = parser.parse_args()
+
+exe(args.vectors, args.plvec, args.train, args.dev, args.test, args.width, args.max, args.epochs, args.patient)
