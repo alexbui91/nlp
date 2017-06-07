@@ -8,6 +8,7 @@ import theano.printing as printing
 from layers import ConvolutionLayer, HiddenLayer, HiddenLayerDropout, FullConnectLayer
 import utils
 
+floatX = theano.config.floatX
 
 class Model:
 
@@ -54,7 +55,7 @@ class Model:
         Words = theano.shared(value=self.word_vectors, name="Words", borrow=True)
         # resign from batch_size * 300 * height => batch_size * 1 * height * width
         # cast word index to vector in dictionary
-        layer0_input = T.cast(Words[T.cast(x.flatten(), dtype="int32")], dtype=theano.config.floatX).reshape((self.batch_size, 1, self.img_height, self.img_width))
+        layer0_input = T.cast(Words[T.cast(x.flatten(), dtype="int32")], dtype=floatX).reshape((self.batch_size, 1, self.img_height, self.img_width))
         layer1_inputs = list()
         # init networks
         rng = np.random.RandomState(3435)
@@ -187,9 +188,9 @@ class Model:
     def shared_dataset(self, data_xy, borrow=True):
         data_x, data_y = data_xy
         shared_x = theano.shared(np.asarray(
-            data_x, dtype=theano.config.floatX), borrow=borrow)
+            data_x, dtype=floatX), borrow=borrow)
         shared_y = theano.shared(np.asarray(
-            data_y, dtype=theano.config.floatX), borrow=borrow)
+            data_y, dtype=floatX), borrow=borrow)
         return shared_x, T.cast(shared_y, 'int32')
 
     def save_trained_params(self, conv_layers, hidden_layer, full_connect):
@@ -224,7 +225,7 @@ class Model:
         y = T.ivector('y')
         index = T.lscalar()
         Words = theano.shared(value=self.word_vectors, name="Words", borrow=True)
-        layer0_input = Words[T.cast(x.flatten(), dtype="int32")].reshape((self.batch_size, 1, input_height, self.img_width))
+        layer0_input = T.cast(Words[T.cast(x.flatten(), dtype="int32")], dtype=floatX).reshape((self.batch_size, 1, input_height, self.img_width))
         layer1_inputs = list()
         for conv_layer in conv_layers:
             conv_output = conv_layer.predict(layer0_input)
@@ -237,7 +238,7 @@ class Model:
         hidden_layer.predict()
         full_connect.setInput(hidden_layer.output)
         full_connect.predict()
-        test_data_x = theano.shared(np.asarray(data_x, dtype=theano.config.floatX), borrow=True)
+        test_data_x = theano.shared(np.asarray(data_x, dtype=floatX), borrow=True)
         test_data_y = theano.shared(np.asarray(data_y, dtype='int32'), borrow=True)
       
         errors = 0.
