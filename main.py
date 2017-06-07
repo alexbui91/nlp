@@ -137,5 +137,3 @@ parser.add_argument('--patient', type=int, default=20)
 parser.add_argument('--epochs', type=int, default=20)
 
 args = parser.parse_args()
-
-exe(args.vectors, args.plvec, args.train, args.dev, args.test, args.width, args.max, args.epochs, args.patient)

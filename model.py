@@ -148,6 +148,7 @@ class Model:
                 # eval
                 val_losses = [val_model(i) for i in xrange(n_val_batches)]
                 val_losses = np.array(val_losses)
+                print(val_losses)
                 # in valuation phase (dev phase, error need to be reduce gradually and not upturn)
                 # if val_gain > best_gain => re assign and stop_count = 0 else
                 # stop_count ++.
@@ -174,7 +175,7 @@ class Model:
                   (epoch, test_len, average_test_epoch_score * 100.))
             print('epoch: %i, training time: %.2f secs; with cost: %.2f' %
                   (epoch, time.time() - start, epoch_cost_train))
-        self.save_trained_params(cnet, hidden_layer, full_connect)
+        # self.save_trained_params(cnet, hidden_layer, full_connect)
 
     def shared_dataset(self, data_xy, borrow=True):
         data_x, data_y = data_xy
