@@ -64,11 +64,7 @@ parser.add_argument('--max', type=int, default=140)
 parser.add_argument('--patient', type=int, default=20)
 parser.add_argument('--epochs', type=int, default=20)
 
-<<<<<<< HEAD
-args = parser.parse_args()
-=======
 args = parser.parse_args()
 
 
 exe(args.vectors, args.plvec, args.train, args.dev, args.test, args.width, args.max, args.epochs, args.patient)
->>>>>>> a8ee924e863e463e417770d0073b7efa154b9c2b
