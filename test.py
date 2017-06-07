@@ -1,3 +1,4 @@
+import numpy as np
 from model import Model
 import argparse
 import os.path
@@ -16,13 +17,14 @@ def it(word_vector, word_vector_preload, test_path, sent,  dimension, maxlen):
     if not test_path:
         if sent: 
             words = sent.split(' ')
+            print(words)
             sent_length = len(words)
             if sent_length < 5:
                 sent_length = 5
-            test_x = utils.make_sentence_idx(vocabs, [words], sent_length)
+            test_x = utils.make_sentence_idx(vocabs, sent.lower(), sent_length)
             test_y = [1]
             model = Model(word_vectors, img_width=dimension, img_height=sent_length, batch_size=1)
-            pred = model.build_test_model((test_x, test_y, sent_length))            
+            pred = model.build_test_model(([test_x], test_y, sent_length))            
             if pred:
                 print "sentiment is positive"
             else: 
@@ -38,7 +40,7 @@ def it(word_vector, word_vector_preload, test_path, sent,  dimension, maxlen):
 parser = argparse.ArgumentParser(description='Running CNN only')
 parser.add_argument('--vectors', type=str, default='/home/alex/Documents/nlp/data/glove.6B.50d.txt')
 parser.add_argument('--plvec', type=str, default='/home/alex/Documents/nlp/data')
-parser.add_argument('--test', type=str, default='/home/alex/Documents/nlp/code/data/50d.test_twitter.txt')
+parser.add_argument('--test', type=str, default='')
 parser.add_argument('--sent', type=str, default='')
 parser.add_argument('--width', type=int, default=50)
 parser.add_argument('--max', type=int, default=140)

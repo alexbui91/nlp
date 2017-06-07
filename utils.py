@@ -1,3 +1,4 @@
+import numpy as np
 import theano
 import theano.tensor as T
 import pickle
@@ -71,7 +72,7 @@ def make_sentence_idx(vocabs, sent, max_sent_length):
                 sent_v.append(0)
         else:
             sent_v.append(0)
-    return sent_v
+    return np.asarray(sent_v, dtype='int32')
 
 
 def loadWordVectors(file, data_path):
