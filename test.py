@@ -9,17 +9,17 @@ from data import Data
 word_vectors, vocabs = None, None
 
 
-def it(word_vector, word_vector_preload, sent, test_path, dimension, maxlen):
+def it(word_vector, word_vector_preload, test_path, sent,  dimension, maxlen):
     global word_vectors, vocabs
     if word_vectors is None or vocabs is None:
-        word_vectors, vocabs = loadWordVectors(word_vector, word_vector_preload)
+        word_vectors, vocabs = utils.loadWordVectors(word_vector, word_vector_preload)
     if not test_path:
         if sent: 
             words = sent.split(' ')
             sent_length = len(words)
             if sent_length < 5:
                 sent_length = 5
-            test_x = make_sentence_idx(vocabs, [words], sent_length)
+            test_x = utils.make_sentence_idx(vocabs, [words], sent_length)
             test_y = [1]
             model = Model(word_vectors, img_width=dimension, img_height=sent_length, batch_size=1)
             pred = model.build_test_model((test_x, test_y, sent_length))            
@@ -46,4 +46,4 @@ parser.add_argument('--patient', type=int, default=20)
 args = parser.parse_args()
 
 
-id(args.vectors, args.plvec, args.test, args.sent, args.width, args.max)
+it(args.vectors, args.plvec, args.test, args.sent, args.width, args.max)
