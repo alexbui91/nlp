@@ -9,7 +9,7 @@ from data import Data
 word_vectors, vocabs = None, None
 
 
-def it(word_vector, word_vector_preload, sent, test_path, sent, dimension, maxlen):
+def it(word_vector, word_vector_preload, sent, test_path, dimension, maxlen):
     global word_vectors, vocabs
     if word_vectors is None or vocabs is None:
         word_vectors, vocabs = loadWordVectors(word_vector, word_vector_preload)
