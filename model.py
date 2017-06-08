@@ -32,6 +32,8 @@ class Model:
         self.training_data = training_data
         self.dev_data = dev_data
         self.test_data = test_data
+        self.gradient = gradient
+        self.gradient_d = gradient_d
         
     # def initFastFourier(self):
     #     x = T.matrix('x', dtype='float64')
@@ -98,7 +100,7 @@ class Model:
         # calculate cost for normal model
         cost = full_connect.negative_log_likelihood(y)
         # create a list of gradients for all model parameters
-        delta = self.perform_gradient(cost, params)
+        delta = self.perform_gradient(self.gradient, cost, params, 'N')
         # dropout to evaluate overfitting
         hidden_layer_dropout.dropout()
         hidden_layer_dropout.predict()
@@ -106,7 +108,7 @@ class Model:
         full_connect.predict()
 
         cost_d = full_connect.negative_log_likelihood(y)
-        delta_d = self.perform_gradient(cost_d, params)
+        delta_d = self.perform_gradient(self.gradient_d, cost_d, params, 'D')
         # train_model is a function that updates the model parameters by
         # SGD Since this model has many parameters, it would be tedious to
         # manually create an update rule for each model parameter. We thus
@@ -264,10 +266,11 @@ class Model:
                 conv_layers.append(conv_layer)
         return conv_layers, hidden_layer, full_connect_layer
 
-    def perform_gradient(self, cost, params, name):
+    def perform_gradient(self, grd, cost, params, name):
+        params_length = len(params)
         e_grad, e_delta_prev = self.init_hyper_values(params_length, name)
         grads = T.grad(cost, params)
-        if gradient is "adadelta":
+        if grd is "adadelta":
             delta = self.adadelta(grads, e_grad, e_delta_prev)
             grads = delta
         else: 

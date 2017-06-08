@@ -8,7 +8,7 @@ from data import Data
 word_vectors, vocabs = None, None
 
 # main.exe(path = '../data/', word_vector='glove.6B.300d.txt', training_path='training_twitter.txt', dev_path='dev_twitter.txt', test_path='test_twitter.txt', img_width=300, epochs=11, patience=20)
-def exe(word_vectors_file, vector_preloaded_path, train_path, dev_path, test_path, img_width, maxlen, epochs, patience, pfrq):
+def exe(word_vectors_file, vector_preloaded_path, train_path, dev_path, test_path, img_width, maxlen, epochs, patience, pfrq, gr, grd):
     # you can modify this data path. Currently, this path is alongside with code directory
     global word_vectors, vocabs
     if os.path.exists(train_path) and os.path.exists(dev_path) and os.path.exists(test_path):
@@ -19,7 +19,7 @@ def exe(word_vectors_file, vector_preloaded_path, train_path, dev_path, test_pat
         raise NotImplementedError()
     if word_vectors is None or vocabs is None:
         word_vectors, vocabs = utils.loadWordVectors(word_vectors_file, vector_preloaded_path)
-    model = Model(word_vectors, train, dev, test, img_width, maxlen, epochs=epochs, patience=patience, patience_frq=pfrq)
+    model = Model(word_vectors, train, dev, test, img_width, maxlen, epochs=epochs, patience=patience, patience_frq=pfrq, gradient=gr, gradient_d=grd)
     model.trainNet()
 
 
@@ -34,8 +34,10 @@ parser.add_argument('--max', type=int, default=140)
 parser.add_argument('--patience', type=int, default=10000)
 parser.add_argument('--pfrq', type=int, default=2)
 parser.add_argument('--epochs', type=int, default=20)
+parser.add_argument('--gr', type=str, default='')
+parser.add_argument('--grd', type=str, default='')
 
 args = parser.parse_args()
 
 
-exe(args.vectors, args.plvec, args.train, args.dev, args.test, args.width, args.max, args.epochs, args.patience, args.pfrq)
+exe(args.vectors, args.plvec, args.train, args.dev, args.test, args.width, args.max, args.epochs, args.patience, args.pfrq, args.gr, args.grd)
