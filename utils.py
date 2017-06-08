@@ -79,3 +79,6 @@ def loadWordVectors(file, data_path):
     d = Data(file)
     d.loadWordVectorsFromText(data_path)
     return d.vectors, d.vocabs
+
+def float_x(arr):
+        return np.asarray(arr, dtype=theano.config.floatX)

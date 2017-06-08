@@ -15,7 +15,8 @@ class Model:
     def __init__(self, word_vectors=None, training_data=None, dev_data=None, test_data=None,
                  img_width=300, img_height=53, hidden_units=[100, 2],
                  dropout_rate=0.5, filter_size=[3, 4, 5], batch_size=50,
-                 epochs=20, patience=10000, learning_rate=0.13, conv_non_linear="tanh"):
+                 epochs=20, patience=10000, patience_frq=2, learning_rate=0.13, conv_non_linear="tanh", 
+                 gradient=None, gradient_d=None):
         
         self.word_vectors = word_vectors
         self.img_width = img_width
@@ -97,22 +98,24 @@ class Model:
         # calculate cost for normal model
         cost = full_connect.negative_log_likelihood(y)
         # create a list of gradients for all model parameters
-        grads = T.grad(cost, params)
+        delta = self.perform_gradient(cost, params)
         # dropout to evaluate overfitting
         hidden_layer_dropout.dropout()
         hidden_layer_dropout.predict()
         full_connect.setInput(hidden_layer_dropout.output)
         full_connect.predict()
+
         cost_d = full_connect.negative_log_likelihood(y)
-        grads_dropout = T.grad(cost_d, params)
+        delta_d = self.perform_gradient(cost_d, params)
         # train_model is a function that updates the model parameters by
         # SGD Since this model has many parameters, it would be tedious to
         # manually create an update rule for each model parameter. We thus
         # create the updates list by automatically looping over all
         # (params[i], grads[i]) pairs.
+        
         updates = [
-            (param_i, param_i - self.learning_rate * (grad_i + grad_drop_i))
-            for param_i, grad_i, grad_drop_i in zip(params, grads, grads_dropout)
+            (param_i, param_i - (d_i + dd_i))
+            for param_i, d_i, dd_i in zip(params, delta, delta_d)
         ]
 
         train_model = theano.function([index], cost, updates=updates, givens={
@@ -134,7 +137,6 @@ class Model:
         stop_count = 0
         epoch = 0
         done_loop = False
-        patience_fre = 2
         current_time_step = 0
         improve_threshold = 0.995
         best_test_lost = 0
@@ -154,7 +156,7 @@ class Model:
                     val_batch_lost = np.mean(val_losses)
                     if val_batch_lost < best_batch_lost:
                         if best_batch_lost * improve_threshold > val_batch_lost:
-                            self.patience = max(self.patience, current_time_step * patience_fre)
+                            self.patience = max(self.patience, current_time_step * self.patience_frq)
                             best_batch_lost = val_batch_lost
                             # test it on the test set
                             test_losses = [
@@ -261,3 +263,57 @@ class Model:
                 conv_layer.initHyperParamsFromValue(conv_param[0], conv_param[-1], 'conv_layer')
                 conv_layers.append(conv_layer)
         return conv_layers, hidden_layer, full_connect_layer
+
+    def perform_gradient(self, cost, params, name):
+        e_grad, e_delta_prev = self.init_hyper_values(params_length, name)
+        grads = T.grad(cost, params)
+        if gradient is "adadelta":
+            delta = self.adadelta(grads, e_grad, e_delta_prev)
+            grads = delta
+        else: 
+            grads = self.sgd(grads)
+        return grads
+
+
+    def init_hyper_values(self, length, name="N"):
+        e_grad = theano.shared(np.zeros(length, dtype=floatX), name="e_grad" + name)
+        e_delta = theano.shared(np.zeros(length, dtype=floatX), name="e_delta" + name)
+        # delta = theano.shared(np.zeros(length, dtype=floatX), name="delta" + name)
+        # e_grad = np.zeros(length, dtype=floatX)
+        # e_delta = np.zeros(length, dtype=floatX)
+        # delta = np.zeros(length, dtype=floatX)
+        return e_grad, e_delta
+
+    def sgd(self, grads):
+        return [utils.float_X(self.learning_rate) * g for g in grads]
+
+    #e_delta_prev is e of delta of two previous step
+    def adadelta(self, grads, e_g_prev, e_delta):
+        #calculate e value for grad from e g previous and current grad
+        e_grad = self.average_value(e_g_prev, grads)
+        #calculate rms for grad
+        rms_g = self.RMS(e_grad)
+        #rms0 = sqrt(epsilon)
+        rms_e_del_prev = self.RMS(e_delta)
+        #delta of current time
+        delta = [rd / rg * g for rd, rg, g in zip(rms_e_del_prev, rms_g, grads)]
+        #e value of delta of time t
+        e_delta_1 = self.average_value(e_delta, delta)
+        
+        return e_grad, e_delta_1, delta
+
+    def rms_prop(self, grads, e_g_prev):
+        e_grad = self.average_value(e_g_prev, grads)
+        rms_g = self.RMS(e_grad)
+        delta = delta = self.cal_delta(rms_g, grads)
+        return e_grad, delta
+
+    def RMS(self, values):
+        return [T.sqrt(e + utils.float_X(properties.epsilon)) for e in  values]
+
+    def average_value(self, E_prev, grads):
+        # grads_ = [T.cast(i, floatX) for i in grads]
+        # return E_prev * properties.gamma + (1 - properties.gamma) * grads_
+        f_gm = utils.float_x(properties.gamma)
+        return [e * f_gm + (utils.float_x(1.) - f_gm) * (g**2.) for e, g in  zip(E_prev, grads)]
+
