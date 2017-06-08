@@ -1,0 +1,6 @@
+data/*
+sentiment_dataset.txt
+trained_params
+vectors.txt
+vocabs.txt
+*.pyc
