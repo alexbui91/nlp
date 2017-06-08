@@ -44,7 +44,6 @@ parser.add_argument('--test', type=str, default='')
 parser.add_argument('--sent', type=str, default='')
 parser.add_argument('--width', type=int, default=50)
 parser.add_argument('--max', type=int, default=140)
-parser.add_argument('--patient', type=int, default=20)
 args = parser.parse_args()
 
 

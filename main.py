@@ -31,10 +31,10 @@ parser.add_argument('--dev', type=str, default='/home/alex/Documents/nlp/code/da
 parser.add_argument('--test', type=str, default='/home/alex/Documents/nlp/code/data/50d.test_twitter.txt')
 parser.add_argument('--width', type=int, default=50)
 parser.add_argument('--max', type=int, default=140)
-parser.add_argument('--patient', type=int, default=20)
+parser.add_argument('--patience', type=int, default=20)
 parser.add_argument('--epochs', type=int, default=20)
 
 args = parser.parse_args()
 
 
-exe(args.vectors, args.plvec, args.train, args.dev, args.test, args.width, args.max, args.epochs, args.patient)
+exe(args.vectors, args.plvec, args.train, args.dev, args.test, args.width, args.max, args.epochs, args.patience)
