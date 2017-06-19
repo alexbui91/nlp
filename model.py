@@ -136,20 +136,22 @@ class Model:
         validation_frequency = min(n_train_batches, self.patience // 2)
         val_batch_lost = 1.
         best_batch_lost = 1.
+        best_test_lost = 1.
         stop_count = 0
         epoch = 0
         done_loop = False
         current_time_step = 0
         improve_threshold = 0.995
-        best_test_lost = 0
+        iter_list = range(n_train_batches)
         while(epoch < self.epochs and done_loop is not True):
             epoch_cost_train = 0.
             epoch += 1
             batch_train = 0
             print("Start epoch: %i" % epoch)
             start = time.time()
-            for mini_batch in xrange(n_train_batches):
-                current_time_step = (epoch - 1) * n_train_batches + mini_batch
+            random.shuffle(iter_list)
+            for mini_batch, m_b_i in zip(iter_list, xrange(n_train_batches)):
+                current_time_step = (epoch - 1) * n_train_batches + m_b_i
                 epoch_cost_train += train_model(mini_batch)
                 batch_train += 1
                 if (current_time_step + 1) % validation_frequency == 0:
@@ -165,10 +167,12 @@ class Model:
                                 test_model(i)
                                 for i in range(n_test_batches)
                             ]
-                            best_test_lost = np.mean(test_losses)
-                            print(('epoch %i minibatch %i test accuracy of %i example is: %.5f') % (epoch, mini_batch, test_len, (1 - best_test_lost) * 100.))
+                            current_test_lost = np.mean(test_losses)
+                            print(('epoch %i minibatch %i test accuracy of %i example is: %.5f') % (epoch, m_b_i, test_len, (1 - current_test_lost) * 100.))
+                            if best_test_lost > current_test_lost:
+                                best_test_lost = current_test_lost
                 if self.patience <= current_time_step:
-                    print(current_time_step)
+                    print(self.patience)
                     done_loop = True
                     break
             print('epoch: %i, training time: %.2f secs; with avg cost: %.5f' % (epoch, time.time() - start, epoch_cost_train / batch_train))
